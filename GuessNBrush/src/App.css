@@ -1,0 +1,25 @@
+@import url("https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap");
+
+body {
+  background-color: #fdfaf7;
+  font-family: "Architects Daughter", cursive;
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      transparent 0px,
+      transparent 24px,
+      #e5e5e5 25px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 24px,
+      #e5e5e5 25px
+    );
+  overflow-x: hidden;
+}
+
+.bg-pale {
+  background-color: #fdefe2;
+}
+
