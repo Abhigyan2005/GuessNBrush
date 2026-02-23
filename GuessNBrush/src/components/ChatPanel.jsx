@@ -1,11 +1,21 @@
-import React from 'react'
-
 function ChatPanel() {
   return (
-      <div className='w-100 h-100 bg-red-400'>
-          
+    <div className="bg-white rounded-xl shadow-md p-4 h-full flex flex-col">
+      <h2 className="text-lg font-semibold mb-3">Chat</h2>
+
+      <div className="flex-1 overflow-y-auto text-sm space-y-1 text-gray-600">
+        <div>Rahul: Dog?</div>
+        <div>Ankit: Cat?</div>
+        <div>Priya: Elephant 😂</div>
+      </div>
+
+      <input
+        type="text"
+        placeholder="Type guess..."
+        className="mt-2 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400"
+      />
     </div>
-  )
+  );
 }
 
-export default ChatPanel
+export default ChatPanel;

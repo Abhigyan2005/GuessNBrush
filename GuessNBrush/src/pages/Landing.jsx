@@ -1,22 +1,25 @@
-import React from "react";
 import Paint from "../components/Paint.jsx";
 import { Sparkles } from "lucide-react";
 import wave from "../assets/svgs/wave.svg";
-
+import { useNavigate } from "react-router-dom";
+import GameRoom from "./GameRoom.jsx";
 function Landing() {
+  const navigate = useNavigate();
+  const JoinRandomRoom = () => { 
+    navigate("/GameRoom");
+  };
   return (
     <>
       <div className="min-h-[60vh] flex flex-col justify-center items-center px-6">
         <div className="max-w-6xl w-full text-center mb-12 mt-20">
           <h1 className="text-4xl md:text-5xl font-bold mb-12">
-            <span className="">Guess</span>
+            <span>Guess</span>
             <span className="text-indigo-700 text-6xl">N</span>
-            <span className="">Brush</span>
+            <span>Brush</span>
           </h1>
         </div>
 
         <div className="max-w-6xl w-[60%] text-center flex flex-row">
-          {/* left */}
           <div className="md:w-1/2 text-center md:text-left">
             <p className="text-lg md:text-xl text-gray-600">
               Draw. Guess. Play.
@@ -27,8 +30,8 @@ function Landing() {
             </p>
 
             <div className="mt-6 flex gap-4 justify-center md:justify-start">
-              {/* Play Button */}
               <button
+                onClick={JoinRandomRoom}
                 className="
       px-8 py-3
       bg-black text-white
@@ -41,14 +44,15 @@ function Landing() {
       hover:shadow-xl
       active:scale-95
       active:shadow-md
+      cursor-pointer
     "
               >
                 Play
               </button>
 
-              {/* Create Room Button */}
               <button
                 className="
+      cursor-pointer
       px-8 py-3
       border border-black
       rounded-xl
@@ -67,7 +71,6 @@ function Landing() {
             </div>
           </div>
 
-          {/* right */}
           <div className="md:w-1/2 flex justify-center">
             <Paint />
           </div>
@@ -75,14 +78,11 @@ function Landing() {
       </div>
 
       <div className="mt-12">
-        {/* wave */}
         <img src={wave} alt="wave graphic" className="w-full h-auto block" />
 
-        {/* about section */}
         <div className="bg-pale min-h-screen w-full flex items-center">
           <div className="max-w-6xl mx-auto w-full px-6 py-20">
             <div className="grid md:grid-cols-2 gap-12">
-              {/* About */}
               <div className="bg-white rounded-2xl shadow-lg p-10">
                 <h2 className="text-3xl font-bold mb-6 text-gray-900">About</h2>
                 <p className="text-gray-600 leading-relaxed text-lg">
@@ -95,7 +95,6 @@ function Landing() {
                 </p>
               </div>
 
-              {/* How To Play */}
               <div className="bg-white rounded-2xl shadow-lg p-10">
                 <h2 className="text-3xl font-bold mb-6 text-gray-900">
                   How To Play
