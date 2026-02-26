@@ -20,16 +20,12 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
-  socket.on("join-room", (roomId) => {
-    socket.join(roomId);
-    console.log(socket.id, "joined", roomId);
-  });
-  socket.on("chat-msg", (msg) => {
-    io.emit("chat-msg", msg);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("Socket disconnected:", socket.id);
+  socket.on("join-room", (roomID) => {
+    socket.join(roomID);
+    io.to(roomID).emit(
+      "message",
+      `A new user has joined the room: ${roomID}`,
+    );
   });
 });
 
