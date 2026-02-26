@@ -3,10 +3,27 @@ import { Sparkles } from "lucide-react";
 import wave from "../assets/svgs/wave.svg";
 import { useNavigate } from "react-router-dom";
 import GameRoom from "./GameRoom.jsx";
+import CreateRoomModal from "../components/CreateRoomModal.jsx";
+import { useState } from "react";
+import { generateUsername } from "../utilities/RandomUserNameGenerator.js";
+import { useRef } from "react";
+import { createRoomId } from "../utilities/RoomCodeGen.js";
+
 function Landing() {
+  const [IsOpen, SetIsOpen] = useState(false);
+  const [RoomID, setRoomId] = useState();
+
   const navigate = useNavigate();
-  const JoinRandomRoom = () => { 
-    navigate("/GameRoom");
+  const usernameRef = useRef(null);
+
+  const JoinRandomRoom = () => {
+    const inputName = usernameRef.current.value;
+    const finalUsername = inputName || generateUsername();
+    navigate("/GameRoom", {
+      state: {
+        username: finalUsername,
+      },
+    });
   };
   return (
     <>
@@ -28,6 +45,16 @@ function Landing() {
                 12 Online
               </span>
             </p>
+
+            <div>
+              <span>Username: </span>
+              <input
+                ref={usernameRef}
+                className="bg-white border border-black p-3 rounded-lg"
+                type="text"
+                placeholder="username"
+              />
+            </div>
 
             <div className="mt-6 flex gap-4 justify-center md:justify-start">
               <button
@@ -65,12 +92,16 @@ function Landing() {
       hover:shadow-lg
       active:scale-95
     "
+                onClick={() => {
+                  SetIsOpen(true);
+                  setRoomId(createRoomId());
+                }}
               >
                 Create a Room
               </button>
             </div>
           </div>
-
+          {IsOpen && <CreateRoomModal SetIsOpen={SetIsOpen} RoomID={RoomID}/>};
           <div className="md:w-1/2 flex justify-center">
             <Paint />
           </div>
