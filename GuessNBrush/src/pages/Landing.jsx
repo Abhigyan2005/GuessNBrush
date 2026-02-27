@@ -8,20 +8,24 @@ import { useState } from "react";
 import { generateUsername } from "../utilities/RandomUserNameGenerator.js";
 import { useRef } from "react";
 import { createRoomId } from "../utilities/RoomCodeGen.js";
+import PlayModal from "../components/PlayModal.jsx";
 
 function Landing() {
   const [IsOpen, SetIsOpen] = useState(false);
+  const [IsPlayOpen, SetPlayIsOpen] = useState(false);
+
   const [RoomID, setRoomId] = useState();
 
   const navigate = useNavigate();
   const usernameRef = useRef(null);
 
-  const JoinRandomRoom = () => {
+  const JoinRandomRoom = (roomID) => {
     const inputName = usernameRef.current.value;
     const finalUsername = inputName || generateUsername();
     navigate("/GameRoom", {
       state: {
         username: finalUsername,
+        roomID: roomID,
       },
     });
   };
@@ -36,7 +40,7 @@ function Landing() {
           </h1>
         </div>
 
-        <div className="max-w-6xl w-[60%] text-center flex flex-row">
+        <div className="max-w-6xl w-[60%] text-center flex flex-col-reverse lg:flex-row">
           <div className="md:w-1/2 text-center md:text-left">
             <p className="text-lg md:text-xl text-gray-600">
               Draw. Guess. Play.
@@ -58,7 +62,9 @@ function Landing() {
 
             <div className="mt-6 flex gap-4 justify-center md:justify-start">
               <button
-                onClick={JoinRandomRoom}
+                onClick={() => {
+                  SetPlayIsOpen(true);
+                }}
                 className="
       px-8 py-3
       bg-black text-white
@@ -76,7 +82,7 @@ function Landing() {
               >
                 Play
               </button>
-
+              {IsPlayOpen && <PlayModal SetPlayIsOpen={SetPlayIsOpen} />}
               <button
                 className="
       cursor-pointer
@@ -93,15 +99,24 @@ function Landing() {
       active:scale-95
     "
                 onClick={() => {
+                  const newRoomID = createRoomId();
+                  setRoomId(newRoomID);
                   SetIsOpen(true);
-                  setRoomId(createRoomId());
                 }}
               >
                 Create a Room
               </button>
             </div>
           </div>
-          {IsOpen && <CreateRoomModal SetIsOpen={SetIsOpen} RoomID={RoomID}/>};
+          {IsOpen && (
+            <CreateRoomModal
+              SetIsOpen={SetIsOpen}
+              RoomID={RoomID}
+              onConfirm={() => {
+                JoinRandomRoom(RoomID);
+              }}
+            />
+          )}
           <div className="md:w-1/2 flex justify-center">
             <Paint />
           </div>
@@ -134,13 +149,13 @@ function Landing() {
                   <li>
                     <span className="font-semibold text-gray-800">
                       Join a Game:
-                    </span>{" "}
+                    </span>
                     Start a new room or join an existing one.
                   </li>
                   <li>
                     <span className="font-semibold text-gray-800">
                       Take Turns Drawing:
-                    </span>{" "}
+                    </span>
                     One player draws a random word each round.
                   </li>
                   <li>

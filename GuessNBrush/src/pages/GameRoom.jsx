@@ -8,15 +8,25 @@ import { useEffect } from "react";
 function GameRoom() {
   const socket = getSocket();
   const location = useLocation();
-  const { username } = location.state || {};
+  const { username, roomID } = location.state || {};
   useEffect(() => {
-    socket.on("connect", () => console.log("Gameroom sees id: ", socket.id));
-  }, [socket]);
+    if (!roomID) return;
 
+    socket.on("connect", () => {
+      console.log("Gameroom sees id: ", socket.id);
+
+      // 🔥 JOIN THE ROOM HERE
+      socket.emit("join-room", roomID);
+    });
+
+    return () => {
+      socket.off("connect");
+    };
+  }, [socket, roomID]);
   return (
     <div className="min-h-screen bg-[#fdefe2] px-4 py-6">
       <div className="max-w-7xl mx-auto space-y-4">
-        <Board />
+        <Board roomID={roomID} />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[75vh]">
           <div className="lg:col-span-3 h-full">
             <PlayerList username={username} />

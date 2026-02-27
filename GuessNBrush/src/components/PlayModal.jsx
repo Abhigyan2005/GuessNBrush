@@ -1,0 +1,81 @@
+import { useState, useEffect } from "react";
+
+function PlayModal({ SetPlayIsOpen }) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div
+      onClick={() => SetPlayIsOpen(false)}
+      className="fixed top-0 left-0 w-screen h-screen bg-black/50 flex justify-center items-center z-50"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className={`bg-amber-100 w-[90%] sm:w-[80%] lg:w-[50%] max-h-[90vh] overflow-y-auto 
+        rounded-2xl shadow-lg p-10 transition-all duration-200
+        ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-90"}
+        flex flex-col items-center gap-8`}
+      >
+        <button
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl 
+          shadow-md transition-transform hover:scale-105"
+        >
+          Join Random Room
+        </button>
+
+        <div className="w-full flex items-center gap-4">
+          <div className="flex-1 h-px bg-gray-300"></div>
+          <span className="text-gray-500 text-sm">OR</span>
+          <div className="flex-1 h-px bg-gray-300"></div>
+        </div>
+
+        <div className="w-full flex flex-col gap-4 items-center">
+          <p className="text-lg font-medium text-gray-700">
+            Join Private Room
+          </p>
+
+          <input
+            type="text"
+            placeholder="Enter Room Code"
+            className="w-full px-4 py-3 rounded-xl border border-gray-300 
+            focus:outline-none focus:ring-2 focus:ring-blue-400 
+            focus:border-transparent transition"
+          />
+
+          <button
+            className="w-full bg-green-500 hover:bg-green-600 text-white py-3 
+            rounded-xl shadow-md transition-transform hover:scale-105"
+          >
+            Join
+          </button>
+        </div>
+
+        <div className="flex gap-4 mt-4">
+          <button
+            className="bg-green-500 text-white px-6 py-2 rounded-xl 
+            shadow-lg transition-transform hover:scale-105"
+          >
+            Confirm
+          </button>
+
+          <button
+            onClick={() => SetPlayIsOpen(false)}
+            className="bg-red-500 text-white px-6 py-2 rounded-xl 
+            shadow-lg transition-transform hover:scale-105"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default PlayModal;
