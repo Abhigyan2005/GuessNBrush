@@ -17,18 +17,58 @@ app.get("/", (req, res) => {
   res.send("API running");
 });
 
+const rooms = new Map();
 io.on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
-
-  socket.on("join-room", (roomID) => {
+  socket.on("join-room", ({ roomID, type, username }) => {
     socket.join(roomID);
-    io.to(roomID).emit(
-      "message",
-      `A new user has joined the room: ${roomID}`,
+
+    if (!rooms.has(roomID)) {
+      rooms.set(roomID, {
+        type: type,
+        players: [],
+      });
+    }
+
+    const room = rooms.get(roomID);
+
+    const alreadyExists = room.players.some(
+      (player) => player.id === socket.id,
     );
+
+    if (!alreadyExists) {
+      room.players.push({
+        id: socket.id,
+        username,
+        score: 0,
+      });
+    }
+
+    io.to(roomID).emit("room-players", room.players);
+  });
+
+  socket.on("find-public-room", () => {
+    
+  })
+
+  socket.on("disconnect", () => {
+    for (const [roomID, room] of rooms.entries()) {
+      const updatedPlayers = room.players.filter(
+        (player) => player.id !== socket.id,
+      );
+
+      if (updatedPlayers.length !== room.players.length) {
+        room.players = updatedPlayers;
+
+        io.to(roomID).emit("room-players", room.players);
+      }
+
+      if (room.players.length === 0) {
+        rooms.delete(roomID);
+      }
+    }
   });
 });
 
 server.listen(3000, () => {
-  console.log("Server running on 3000");
+  console.log("server is running");
 });
