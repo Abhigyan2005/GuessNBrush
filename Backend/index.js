@@ -1,7 +1,7 @@
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
-
+import { createRoomId } from "./utilities/generateRoomId.js";
 const app = express();
 
 const server = http.createServer(app);
@@ -17,7 +17,9 @@ app.get("/", (req, res) => {
   res.send("API running");
 });
 
+const publicRooms = [];
 const rooms = new Map();
+const MAX_PUBLIC_PLAYERS = 4;
 io.on("connection", (socket) => {
   socket.on("join-room", ({ roomID, type, username }) => {
     socket.join(roomID);
@@ -46,10 +48,33 @@ io.on("connection", (socket) => {
     io.to(roomID).emit("room-players", room.players);
   });
 
-  socket.on("find-public-room", () => {
-    
-  })
+  socket.on("find-public-room", ({ username }) => {
+    let room;
+    let roomID = publicRooms.find((id) => {
+      room = rooms.get(id);
+      return room && room.players.length < MAX_PUBLIC_PLAYERS;
+    });
 
+    if (!roomID) {
+      roomID = createRoomId();
+      rooms.set(roomID, { type: "public", players: [] });
+      publicRooms.push(roomID);
+    }
+
+    room = rooms.get(roomID); 
+
+    room.players.push({
+      id: socket.id,
+      username,
+      score: 0,
+    });
+
+    socket.join(roomID);
+
+    io.to(roomID).emit("room-players", room.players);
+
+    socket.emit("joined-public-room", { roomID });
+  });
   socket.on("disconnect", () => {
     for (const [roomID, room] of rooms.entries()) {
       const updatedPlayers = room.players.filter(
