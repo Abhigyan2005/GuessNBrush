@@ -49,7 +49,7 @@ function CreateRoomModal({ SetIsOpen, RoomID, onConfirm }) {
             onClick={onConfirm}
             className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl shadow-md transition-transform hover:scale-105"
           >
-            Confirm
+            Join
           </button>
 
           <button

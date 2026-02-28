@@ -5,31 +5,49 @@ import Board from "../components/Board.jsx";
 import { useLocation } from "react-router-dom";
 import { getSocket } from "../utilities/socket.js";
 import { useEffect } from "react";
+import { useState } from "react";
+
 function GameRoom() {
   const socket = getSocket();
   const location = useLocation();
-  const { username, roomID } = location.state || {};
+  const [players, setPlayers] = useState([]);
+  const { username, roomID, type } = location.state || {};
+ 
   useEffect(() => {
-    if (!roomID) return;
+    const handleBeforeUnload = () => {
+      window.history.replaceState(null, "");
+    };
 
-    socket.on("connect", () => {
-      console.log("Gameroom sees id: ", socket.id);
-
-      // 🔥 JOIN THE ROOM HERE
-      socket.emit("join-room", roomID);
-    });
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      socket.off("connect");
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [socket, roomID]);
+  }, []);
+  useEffect(() => {
+    if (!roomID) return;
+    console.log(username, roomID, type);
+    socket.on("room-players", (roomPlayers) => {
+      setPlayers(roomPlayers);
+    });
+
+    socket.emit("join-room", { roomID, type, username });
+
+    return () => {
+      socket.off("room-players");
+    };
+  }, [roomID, type, username]);
   return (
     <div className="min-h-screen bg-[#fdefe2] px-4 py-6">
       <div className="max-w-7xl mx-auto space-y-4">
         <Board roomID={roomID} />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[75vh]">
           <div className="lg:col-span-3 h-full">
-            <PlayerList username={username} />
+            <PlayerList
+              username={username}
+              players={players}
+              numberOfPlayers={players.length}
+            />
           </div>
 
           <div className="lg:col-span-6 h-full">

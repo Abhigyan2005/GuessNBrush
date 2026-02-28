@@ -13,19 +13,20 @@ import PlayModal from "../components/PlayModal.jsx";
 function Landing() {
   const [IsOpen, SetIsOpen] = useState(false);
   const [IsPlayOpen, SetPlayIsOpen] = useState(false);
-
   const [RoomID, setRoomId] = useState();
 
   const navigate = useNavigate();
   const usernameRef = useRef(null);
 
-  const JoinRandomRoom = (roomID) => {
+  const JoinRandomRoom = (roomID, roomType) => {
     const inputName = usernameRef.current.value;
     const finalUsername = inputName || generateUsername();
+
     navigate("/GameRoom", {
       state: {
         username: finalUsername,
         roomID: roomID,
+        type: roomType,
       },
     });
   };
@@ -64,6 +65,8 @@ function Landing() {
               <button
                 onClick={() => {
                   SetPlayIsOpen(true);
+                  const newRoom = createRoomId();
+                  setRoomId(newRoom);
                 }}
                 className="
       px-8 py-3
@@ -82,7 +85,13 @@ function Landing() {
               >
                 Play
               </button>
-              {IsPlayOpen && <PlayModal SetPlayIsOpen={SetPlayIsOpen} />}
+              {IsPlayOpen && (
+                <PlayModal
+                  SetPlayIsOpen={SetPlayIsOpen}
+                  JoinRandomRoom={JoinRandomRoom}
+                  RoomID={RoomID}
+                />
+              )}
               <button
                 className="
       cursor-pointer
@@ -113,7 +122,7 @@ function Landing() {
               SetIsOpen={SetIsOpen}
               RoomID={RoomID}
               onConfirm={() => {
-                JoinRandomRoom(RoomID);
+                JoinRandomRoom(RoomID, "private");
               }}
             />
           )}

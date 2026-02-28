@@ -1,8 +1,10 @@
+import { useRef } from "react";
 import { useState, useEffect } from "react";
 
-function PlayModal({ SetPlayIsOpen }) {
+function PlayModal({ SetPlayIsOpen, JoinRandomRoom, RoomID }) {
   const [isVisible, setIsVisible] = useState(false);
 
+  const RoomRef = useRef(null);
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
@@ -10,6 +12,8 @@ function PlayModal({ SetPlayIsOpen }) {
 
     return () => clearTimeout(timer);
   }, []);
+
+
 
   return (
     <div
@@ -26,6 +30,9 @@ function PlayModal({ SetPlayIsOpen }) {
         <button
           className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl 
           shadow-md transition-transform hover:scale-105"
+          onClick={() => {
+            JoinRandomRoom(RoomID, "public");
+          }}
         >
           Join Random Room
         </button>
@@ -37,11 +44,10 @@ function PlayModal({ SetPlayIsOpen }) {
         </div>
 
         <div className="w-full flex flex-col gap-4 items-center">
-          <p className="text-lg font-medium text-gray-700">
-            Join Private Room
-          </p>
+          <p className="text-lg font-medium text-gray-700">Join Private Room</p>
 
           <input
+            ref={RoomRef}
             type="text"
             placeholder="Enter Room Code"
             className="w-full px-4 py-3 rounded-xl border border-gray-300 
@@ -52,19 +58,15 @@ function PlayModal({ SetPlayIsOpen }) {
           <button
             className="w-full bg-green-500 hover:bg-green-600 text-white py-3 
             rounded-xl shadow-md transition-transform hover:scale-105"
+            onClick={() => {
+              JoinRandomRoom(RoomRef.current.value, "private");
+            }}
           >
             Join
           </button>
         </div>
 
         <div className="flex gap-4 mt-4">
-          <button
-            className="bg-green-500 text-white px-6 py-2 rounded-xl 
-            shadow-lg transition-transform hover:scale-105"
-          >
-            Confirm
-          </button>
-
           <button
             onClick={() => SetPlayIsOpen(false)}
             className="bg-red-500 text-white px-6 py-2 rounded-xl 
