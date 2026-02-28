@@ -3,16 +3,15 @@ import ChatPanel from "../components/ChatPanel";
 import PlayerList from "../components/PlayerList";
 import Board from "../components/Board.jsx";
 import { useLocation } from "react-router-dom";
-import { getSocket } from "../utilities/socket.js";
 import { useEffect } from "react";
 import { useState } from "react";
+import { getSocket } from "../utilities/socket.js";
 
 function GameRoom() {
-  const socket = getSocket();
   const location = useLocation();
   const [players, setPlayers] = useState([]);
   const { username, roomID, type } = location.state || {};
- 
+  const socket = getSocket();
   useEffect(() => {
     const handleBeforeUnload = () => {
       window.history.replaceState(null, "");
@@ -40,7 +39,7 @@ function GameRoom() {
   return (
     <div className="min-h-screen bg-[#fdefe2] px-4 py-6">
       <div className="max-w-7xl mx-auto space-y-4">
-        <Board roomID={roomID} />
+        <Board roomID={roomID} type={type} />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[75vh]">
           <div className="lg:col-span-3 h-full">
             <PlayerList

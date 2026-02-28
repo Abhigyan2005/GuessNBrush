@@ -16,7 +16,7 @@ function PlayerList({ username, players, numberOfPlayers }) {
                   : "text-gray-800"
               }
             >
-              {a.username}
+              {a.username} - <span>{a.score}</span>
             </div>
           ))}
         </div>

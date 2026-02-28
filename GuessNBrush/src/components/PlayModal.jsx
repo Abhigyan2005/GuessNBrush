@@ -1,9 +1,14 @@
 import { useRef } from "react";
 import { useState, useEffect } from "react";
-
-function PlayModal({ SetPlayIsOpen, JoinRandomRoom, RoomID }) {
+import { generateUsername } from "../utilities/RandomUserNameGenerator";
+import { getSocket } from "../utilities/socket";
+function PlayModal({
+  SetPlayIsOpen,
+  JoinRandomRoom,
+  usernameRef,
+}) {
   const [isVisible, setIsVisible] = useState(false);
-
+  const socket = getSocket();
   const RoomRef = useRef(null);
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -13,7 +18,15 @@ function PlayModal({ SetPlayIsOpen, JoinRandomRoom, RoomID }) {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    socket.on("joined-public-room", ({ roomID }) => {
+      JoinRandomRoom(roomID, "public");
+    });
 
+    return () => {
+      socket.off("joined-public-room"); // cleanup to avoid duplicates
+    };
+  }, [socket]);
 
   return (
     <div
@@ -31,7 +44,9 @@ function PlayModal({ SetPlayIsOpen, JoinRandomRoom, RoomID }) {
           className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl 
           shadow-md transition-transform hover:scale-105"
           onClick={() => {
-            JoinRandomRoom(RoomID, "public");
+            const username = usernameRef.current.value;
+            const finalUsername = username || generateUsername();
+            socket.emit("find-public-room", { username: finalUsername });
           }}
         >
           Join Random Room

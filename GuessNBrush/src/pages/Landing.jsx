@@ -65,8 +65,6 @@ function Landing() {
               <button
                 onClick={() => {
                   SetPlayIsOpen(true);
-                  const newRoom = createRoomId();
-                  setRoomId(newRoom);
                 }}
                 className="
       px-8 py-3
@@ -90,6 +88,7 @@ function Landing() {
                   SetPlayIsOpen={SetPlayIsOpen}
                   JoinRandomRoom={JoinRandomRoom}
                   RoomID={RoomID}
+                  usernameRef={usernameRef}
                 />
               )}
               <button
