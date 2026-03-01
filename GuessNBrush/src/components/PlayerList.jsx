@@ -7,9 +7,9 @@ function PlayerList({ username, players, numberOfPlayers }) {
 
       <div className="space-y-2 text-sm overflow-y-auto">
         <div className="bg-gray-100 rounded-lg px-3 py-2">
-          {players.map((a, index) => (
+          {players.map((a) => (
             <div
-              key={index}
+              key={a.id}
               className={
                 username === a.username
                   ? "text-blue-600 font-semibold"

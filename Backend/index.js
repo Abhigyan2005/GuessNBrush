@@ -61,7 +61,7 @@ io.on("connection", (socket) => {
       publicRooms.push(roomID);
     }
 
-    room = rooms.get(roomID); 
+    room = rooms.get(roomID);
 
     room.players.push({
       id: socket.id,
@@ -75,6 +75,22 @@ io.on("connection", (socket) => {
 
     socket.emit("joined-public-room", { roomID });
   });
+
+  socket.on("leave-room", ({ roomID }) => {
+    const room = rooms.get(roomID);
+    if (!room) return;
+
+    room.players = room.players.filter((player) => player.id !== socket.id);
+
+    socket.leave(roomID);
+
+    io.to(roomID).emit("room-players", room.players);
+
+    if (room.players.length == 0) {
+      rooms.delete(roomID);
+    }
+  });
+  
   socket.on("disconnect", () => {
     for (const [roomID, room] of rooms.entries()) {
       const updatedPlayers = room.players.filter(

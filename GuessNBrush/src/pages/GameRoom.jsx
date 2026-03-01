@@ -33,6 +33,7 @@ function GameRoom() {
     socket.emit("join-room", { roomID, type, username });
 
     return () => {
+      socket.emit("leave-room", { roomID });
       socket.off("room-players");
     };
   }, [roomID, type, username]);
