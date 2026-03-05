@@ -1,4 +1,5 @@
 function PlayerList({ username, players, numberOfPlayers }) {
+  console.log(username);
   return (
     <div className="bg-white rounded-xl shadow-md p-4 h-full flex flex-col">
       <h2 className="text-lg font-semibold mb-3">

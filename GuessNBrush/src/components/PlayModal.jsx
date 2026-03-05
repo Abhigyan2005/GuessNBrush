@@ -24,7 +24,7 @@ function PlayModal({
     });
 
     return () => {
-      socket.off("joined-public-room"); // cleanup to avoid duplicates
+      socket.off("joined-public-room"); 
     };
   }, [socket]);
 

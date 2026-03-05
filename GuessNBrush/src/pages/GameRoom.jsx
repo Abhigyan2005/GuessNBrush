@@ -51,7 +51,7 @@ function GameRoom() {
           </div>
 
           <div className="lg:col-span-6 h-full">
-            <Canvas />
+            <Canvas roomID={roomID}/>
           </div>
 
           <div className="lg:col-span-3 h-full">
