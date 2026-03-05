@@ -28,6 +28,14 @@ io.on("connection", (socket) => {
       rooms.set(roomID, {
         type: type,
         players: [],
+        gameStarted: false,
+        host: socket.id,
+
+        currentDrawerIndex: 0,
+        currentWord: null,
+        round: 1,
+        guessedPlayers: new Set(),
+        timer: null,
       });
     }
 
@@ -46,6 +54,15 @@ io.on("connection", (socket) => {
     }
 
     io.to(roomID).emit("room-players", room.players);
+
+    if (
+      room.type === "public" &&
+      room.players.length >= 2 &&
+      !room.gameStarted
+    ) {
+      room.gameStarted = true;
+      io.to(roomID).emit("game-started");
+    }
   });
 
   socket.on("find-public-room", ({ username }) => {
@@ -57,22 +74,39 @@ io.on("connection", (socket) => {
 
     if (!roomID) {
       roomID = createRoomId();
-      rooms.set(roomID, { type: "public", players: [] });
+      rooms.set(roomID, {
+        type: "public",
+        players: [],
+        gameStarted: false,
+        host: socket.id,
+      });
       publicRooms.push(roomID);
     }
 
     room = rooms.get(roomID);
 
-    room.players.push({
-      id: socket.id,
-      username,
-      score: 0,
-    });
+    const alreadyExists = room.players.some(
+      (player) => player.id === socket.id,
+    );
 
+    if (!alreadyExists) {
+      room.players.push({
+        id: socket.id,
+        username,
+        score: 0,
+      });
+    }
     socket.join(roomID);
 
     io.to(roomID).emit("room-players", room.players);
-
+    if (
+      room.type === "public" &&
+      room.players.length >= 2 &&
+      !room.gameStarted
+    ) {
+      room.gameStarted = true;
+      io.to(roomID).emit("game-started");
+    }
     socket.emit("joined-public-room", { roomID });
   });
 
@@ -86,11 +120,16 @@ io.on("connection", (socket) => {
 
     io.to(roomID).emit("room-players", room.players);
 
-    if (room.players.length == 0) {
+    if (room.players.length === 0) {
       rooms.delete(roomID);
+
+      const index = publicRooms.indexOf(roomID);
+      if (index !== -1) {
+        publicRooms.splice(index, 1);
+      }
     }
   });
-  
+
   socket.on("disconnect", () => {
     for (const [roomID, room] of rooms.entries()) {
       const updatedPlayers = room.players.filter(
@@ -105,6 +144,11 @@ io.on("connection", (socket) => {
 
       if (room.players.length === 0) {
         rooms.delete(roomID);
+
+        const index = publicRooms.indexOf(roomID);
+        if (index !== -1) {
+          publicRooms.splice(index, 1);
+        }
       }
     }
   });

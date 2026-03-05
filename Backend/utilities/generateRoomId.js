@@ -1,7 +1,6 @@
 
 const activeRooms = new Set();
 
-
 function generateRandomId(length = 6) {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let result = "";
@@ -19,12 +18,4 @@ export function createRoomId() {
 
   activeRooms.add(newId); 
   return newId;
-}
-
-export function removeRoomId(roomId) {
-  activeRooms.delete(roomId);
-}
-
-export function isRoomActive(roomId) {
-  return activeRooms.has(roomId);
 }
