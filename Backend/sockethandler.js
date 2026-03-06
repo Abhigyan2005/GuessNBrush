@@ -8,7 +8,40 @@ import {
   FindAvailablePublicRoom,
 } from "./roomManager.js";
 
+import { StartTurn, chooseWord, checkGuess, endTurn, startTimer, stopTimer } from "./gameManager.js";
+
 export function setupSockets(io) {
+  function handleStartTurn(roomID) {
+    const result = StartTurn(roomID);
+    if (!result) return;
+
+    const { drawer, wordChoices } = result;
+
+    io.to(drawer.id).emit("choose-word", { words: wordChoices });
+
+    io.to(roomID).emit("waiting-for-word", { drawerName: drawer.username });
+  }
+
+  function handleTurnEnd(roomID) {
+    stopTimer(roomID);
+    const room = rooms.get(roomID);
+    const turnResult = endTurn(roomID);
+
+    io.to(roomID).emit("turn-ended", { word: turnResult.word });
+
+    setTimeout(() => {
+      if (turnResult.status === "game-over") {
+        const winner = [...room.players].sort((a, b) => b.score - a.score)[0];
+        io.to(roomID).emit("game-over", {
+          players: room.players,
+          winner: winner.username,
+        });
+      } else {
+        handleStartTurn(roomID);
+      }
+    }, 3000);
+  }
+
   io.on("connection", (socket) => {
     socket.on("join-room", ({ roomID, type, username }) => {
       socket.join(roomID);
@@ -22,8 +55,10 @@ export function setupSockets(io) {
           currentDrawerIndex: 0,
           currentWord: null,
           round: 1,
+          totalRounds: 3,
           guessedPlayers: new Set(),
           timer: null,
+          usedWords: new Set(),
         });
       }
 
@@ -32,12 +67,12 @@ export function setupSockets(io) {
         username,
         score: 0,
       });
-
       io.to(roomID).emit("room-players", room.players);
 
-      if (room.type === "public" && room.players.length > 2) {
+      if (room.type === "public" && room.players.length >= 2) {
         room.gameStarted = true;
         io.to(roomID).emit("game-started");
+        handleStartTurn(roomID);
       }
     });
 
@@ -54,9 +89,10 @@ export function setupSockets(io) {
 
       socket.emit("joined-public-room", { roomID });
 
-      if (room.type === "public" && room.players.length > 2) {
+      if (room.type === "public" && room.players.length >= 2) {
         room.gameStarted = true;
         io.to(room).emit("game-started");
+        handleStartTurn(roomID);
       }
     });
 
@@ -66,7 +102,44 @@ export function setupSockets(io) {
       socket.leave(roomID);
     });
 
-    //socket-drawawaw
+    //GAME-LOGIC
+    socket.on("word-chosen", ({ roomID, word }) => {
+      const result = chooseWord(roomID, word);
+      const room = rooms.get(roomID);
+      if (!result) return;
+
+      io.to(roomID).emit("turn-started", {
+        drawerID: result.drawerID,
+        wordLength: result.wordLength,
+        hint: result.hint,
+        round: room.round,
+        totalRounds: room.totalRounds,
+      });
+
+      startTimer(roomID, io, () => handleTurnEnd(roomID));
+    });
+
+    //chat-logic
+    socket.on("chat-message", ({ roomID, message, username }) => {
+      const room = rooms.get(roomID);
+      if (!room || !room.currentWord) {
+        io.to(roomID).emit("chat-message", { username, message });
+        return;
+      }
+
+      const result = checkGuess(roomID, socket.id, message);
+
+      if (result.correct) {
+        io.to(roomID).emit("player-guessed", { username });
+        socket.emit("correct-guess");
+
+        if (result.allGuessed) {
+          handleTurnEnd(roomID);
+        }
+      } else {
+        io.to(roomID).emit("chat-message", { username, message });
+      }
+    });
 
     socket.on("disconnect", () => {
       for (const roomID of rooms.keys()) {

@@ -14,8 +14,10 @@ export function CreatePublicRoom(hostId) {
     currentDrawerIndex: 0,
     currentWord: null,
     round: 1,
+    totalRounds: 3,
     guessedPlayers: new Set(),
     timer: null,
+    usedWords: new Set(), 
   };
 
   rooms.set(roomID, room);
@@ -53,7 +55,6 @@ export function removePlayer(roomID, playerID) {
       rooms.delete(roomID);
     }
   }
-
   return room;
 }
 
