@@ -1,8 +1,30 @@
 import { createRoomId } from "./utilities/generateRoomId.js";
 
 export const publicRooms = [];
+export const PrivateRooms = [];
 export const rooms = new Map();
 export const MAX_PUBLIC_PLAYERS = 4;
+
+export function CreatePrivateRoom(hostId) {
+  const roomID = createRoomId();
+  const room = {
+    type: "private",
+    players: [],
+    gameStarted: false,
+    host: hostId,
+    currentDrawerIndex: 0,
+    currentWord: null,
+    round: 1,
+    totalRounds: 3,
+    guessedPlayers: new Set(),
+    timer: null,
+    usedWords: new Set(),
+  };
+
+  rooms.set(roomID, room);
+  PrivateRooms.push(roomID);
+  return roomID;
+}
 
 export function CreatePublicRoom(hostId) {
   const roomID = createRoomId();
@@ -17,7 +39,7 @@ export function CreatePublicRoom(hostId) {
     totalRounds: 3,
     guessedPlayers: new Set(),
     timer: null,
-    usedWords: new Set(), 
+    usedWords: new Set(),
   };
 
   rooms.set(roomID, room);

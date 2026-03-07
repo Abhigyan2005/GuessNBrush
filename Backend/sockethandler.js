@@ -2,13 +2,22 @@ import {
   rooms,
   publicRooms,
   MAX_PUBLIC_PLAYERS,
+  PrivateRooms,
   addPlayerToRoom,
   removePlayer,
   CreatePublicRoom,
+  CreatePrivateRoom,
   FindAvailablePublicRoom,
 } from "./roomManager.js";
 
-import { StartTurn, chooseWord, checkGuess, endTurn, startTimer, stopTimer } from "./gameManager.js";
+import {
+  StartTurn,
+  chooseWord,
+  checkGuess,
+  endTurn,
+  startTimer,
+  stopTimer,
+} from "./gameManager.js";
 
 export function setupSockets(io) {
   function handleStartTurn(roomID) {
@@ -17,9 +26,12 @@ export function setupSockets(io) {
 
     const { drawer, wordChoices } = result;
 
-    io.to(drawer.id).emit("choose-word", { words: wordChoices });
+    io.to(drawer.id).emit("choose-word", { words: wordChoices }); //only to drawer
 
-    io.to(roomID).emit("waiting-for-word", { drawerName: drawer.username });
+    io.to(roomID).emit("waiting-for-word", {
+      drawerName: drawer.username,
+      drawerID: drawer.id, 
+    });
   }
 
   function handleTurnEnd(roomID) {
@@ -81,6 +93,7 @@ export function setupSockets(io) {
       if (!roomID) {
         roomID = CreatePublicRoom(socket.id);
       }
+
       const room = addPlayerToRoom(roomID, {
         id: socket.id,
         username,
@@ -95,6 +108,24 @@ export function setupSockets(io) {
         handleStartTurn(roomID);
       }
     });
+
+
+    //private rooom
+    socket.on("create-private-room", ({ username }) => {
+      const roomID = CreatePrivateRoom(socket.id);
+
+      if(!roomID){
+        return null;
+      }
+
+      const room = addPlayerToRoom(roomID, {
+        id: socket.id,
+        username,
+        score:0
+      })
+
+      socket.emit("joined-private-room", { roomID });
+    })
 
     socket.on("leave-room", ({ roomID }) => {
       const room = removePlayer(roomID, socket.id);

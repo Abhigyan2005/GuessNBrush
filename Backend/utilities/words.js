@@ -2186,6 +2186,6 @@ export const words = [
 export function getRandomWords(usedWords = new Set(), count = 3) {
   const available = words.filter((w) => !usedWords.has(w.toLowerCase()));
   if (available.length < count) return words.slice(0, count);
-  const shuffled = [...available].sort(() => Math.random() - 0.5);
+  const shuffled = [...available].sort(() => Math.random() - 0.5); //faaaah
   return shuffled.slice(0, count);
 }
