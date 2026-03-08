@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { getSocket } from "../utilities/socket.js";
 import { hexToRgba, floodFill } from "../utilities/CanvasTool.js";
 
-function Canvas({ roomID }) {
+function Canvas({ roomID, isDrawer }) {
   const canvasRef = useRef(null);
-  const ctxRef = useRef(null); 
+  const ctxRef = useRef(null);
   const colorRef = useRef(null);
   const [mode, setMode] = useState("draw");
   const [brushSize, setBrushSize] = useState(2);
@@ -24,6 +24,9 @@ function Canvas({ roomID }) {
     let mousedown = false;
 
     const handleMouseDown = (e) => {
+      if (!isDrawer) {
+        return;
+      }
       if (e.button !== 0) return;
       if (mode === "fill") {
         const color = colorRef.current.value;
@@ -53,6 +56,9 @@ function Canvas({ roomID }) {
     };
 
     const handleMouseMove = (e) => {
+      if (!isDrawer) {
+        return;
+      }
       if (!mousedown) return;
       ctx.lineTo(e.offsetX, e.offsetY);
       ctx.stroke();
@@ -60,6 +66,9 @@ function Canvas({ roomID }) {
     };
 
     const handleMouseUp = () => {
+      if (!isDrawer) {
+        return;
+      }
       mousedown = false;
     };
 
@@ -72,7 +81,7 @@ function Canvas({ roomID }) {
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [mode, brushSize, roomID]);
+  }, [mode, brushSize, roomID,isDrawer]);
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 h-full flex flex-col">
@@ -83,7 +92,7 @@ function Canvas({ roomID }) {
           className="border rounded-lg w-full max-w-112.5 aspect-square"
         />
       </div>
-      <div className="mt-3 flex flex-wrap justify-center gap-2">
+      { isDrawer ? <div className="mt-3 flex flex-wrap justify-center gap-2">
         <button
           onClick={() => setMode("draw")}
           className="px-3 py-1.5 bg-black text-white rounded-lg text-sm"
@@ -106,7 +115,7 @@ function Canvas({ roomID }) {
           onClick={() => {
             const canvas = canvasRef.current;
             ctxRef.current.clearRect(0, 0, canvas.width, canvas.height);
-            socket.emit("draw-clear", { roomID });
+            // socket.emit("draw-clear", { roomID });
           }}
           className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm"
         >
@@ -127,7 +136,7 @@ function Canvas({ roomID }) {
           defaultValue="#000000"
           className="w-8 h-8 cursor-pointer"
         />
-      </div>
+      </div> : <div></div>}
     </div>
   );
 }

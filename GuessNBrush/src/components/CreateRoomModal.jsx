@@ -1,12 +1,24 @@
 import { useState, useEffect } from "react";
-
-function CreateRoomModal({ SetIsOpen, RoomID, onConfirm }) {
+import { getSocket } from "../utilities/socket";
+function CreateRoomModal({ SetIsOpen, onConfirm }) {
   const [isVisible, setIsVisible] = useState(false);
   const [copy, setCopy] = useState(false);
+  const [RoomID, setRoomID] = useState(null);
 
+  const socket = getSocket();
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 0);
-    return () => clearTimeout(timer);
+
+
+    const handleJoinedPrivateRoom = ({ roomID }) => {
+    setRoomID(roomID);
+  };
+
+  socket.on("joined-private-room", handleJoinedPrivateRoom);
+    return () => {
+      clearTimeout(timer);
+      socket.off("joined-private-room", handleJoinedPrivateRoom);
+    };
   }, []);
 
   const handleCopy = () => {
@@ -27,9 +39,10 @@ function CreateRoomModal({ SetIsOpen, RoomID, onConfirm }) {
           ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-90"}
           flex flex-col items-center gap-8`}
       >
-   
         <div className="text-center">
-          <p className="text-lg text-gray-700">Room has been created! Your room code is:</p>
+          <p className="text-lg text-gray-700">
+            Room has been created! Your room code is:
+          </p>
 
           <div className="mt-4 p-6 bg-amber-50 rounded-2xl flex items-center justify-between gap-4">
             <span className="font-mono text-lg">{RoomID}</span>
@@ -43,10 +56,11 @@ function CreateRoomModal({ SetIsOpen, RoomID, onConfirm }) {
           </div>
         </div>
 
-  
         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center mt-4">
           <button
-            onClick={onConfirm}
+            onClick={() => {
+              onConfirm(RoomID);
+            }}
             className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl shadow-md transition-transform hover:scale-105"
           >
             Join

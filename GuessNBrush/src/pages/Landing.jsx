@@ -2,18 +2,17 @@ import Paint from "../components/Paint.jsx";
 import { Sparkles } from "lucide-react";
 import wave from "../assets/svgs/wave.svg";
 import { useNavigate } from "react-router-dom";
-import GameRoom from "./GameRoom.jsx";
 import CreateRoomModal from "../components/CreateRoomModal.jsx";
 import { useState } from "react";
 import { generateUsername } from "../utilities/RandomUserNameGenerator.js";
 import { useRef } from "react";
-import { createRoomId } from "../utilities/RoomCodeGen.js";
 import PlayModal from "../components/PlayModal.jsx";
+import { getSocket } from "../utilities/socket.js";
 
 function Landing() {
   const [IsOpen, SetIsOpen] = useState(false);
   const [IsPlayOpen, SetPlayIsOpen] = useState(false);
-  const [RoomID, setRoomId] = useState();
+  const socket = getSocket();
 
   const navigate = useNavigate();
   const usernameRef = useRef(null);
@@ -67,19 +66,19 @@ function Landing() {
                   SetPlayIsOpen(true);
                 }}
                 className="
-      px-8 py-3
-      bg-black text-white
-      rounded-xl
-      font-medium
-      shadow-md
-      transition-all duration-200 ease-out
-      hover:bg-gray-800
-      hover:scale-105
-      hover:shadow-xl
-      active:scale-95
-      active:shadow-md
-      cursor-pointer
-    "
+        px-8 py-3
+        bg-black text-white
+        rounded-xl
+        font-medium
+        shadow-md
+        transition-all duration-200 ease-out
+        hover:bg-gray-800
+        hover:scale-105
+        hover:shadow-xl
+        active:scale-95
+        active:shadow-md
+        cursor-pointer
+      "
               >
                 Play
               </button>
@@ -87,29 +86,29 @@ function Landing() {
                 <PlayModal
                   SetPlayIsOpen={SetPlayIsOpen}
                   JoinRandomRoom={JoinRandomRoom}
-                  RoomID={RoomID}
                   usernameRef={usernameRef}
                 />
               )}
               <button
                 className="
-      cursor-pointer
-      px-8 py-3
-      border border-black
-      rounded-xl
-      font-medium
-      bg-white
-      shadow-sm
-      transition-all duration-200 ease-out
-      hover:bg-gray-100
-      hover:scale-105
-      hover:shadow-lg
-      active:scale-95
-    "
+        cursor-pointer
+        px-8 py-3
+        border border-black
+        rounded-xl
+        font-medium
+        bg-white
+        shadow-sm
+        transition-all duration-200 ease-out
+        hover:bg-gray-100
+        hover:scale-105
+        hover:shadow-lg
+        active:scale-95
+      "
                 onClick={() => {
-                  const newRoomID = createRoomId();
-                  setRoomId(newRoomID);
-                  SetIsOpen(true);
+                  const username =
+                    usernameRef.current.value || generateUsername();
+                  socket.emit("create-private-room", { username });
+                  SetIsOpen(true)
                 }}
               >
                 Create a Room
@@ -119,8 +118,7 @@ function Landing() {
           {IsOpen && (
             <CreateRoomModal
               SetIsOpen={SetIsOpen}
-              RoomID={RoomID}
-              onConfirm={() => {
+              onConfirm={(RoomID) => {
                 JoinRandomRoom(RoomID, "private");
               }}
             />
