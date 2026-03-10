@@ -34,7 +34,7 @@ function PlayerList({
           <button
             onClick={onStart}
             className="mt-3 w-full bg-green-500 hover:bg-green-600 text-white 
-          py-2 rounded-xl font-medium transition-all hover:scale-105"
+          py-2 rounded-xl font-medium transition-all overflow hover:bg-green-700"
           >
             Start Game
           </button>

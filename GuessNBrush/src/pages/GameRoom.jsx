@@ -123,7 +123,10 @@ function GameRoom() {
                 isHost={isHost}
                 canStart={canStart}
                 type={type}
-                onStart={() => socket.emit("start-game", { roomID })}
+                onStart={() => {
+                  socket.emit("start-game", { roomID })
+                  setCanStart(false);
+                }}
               />
             </div>
 
