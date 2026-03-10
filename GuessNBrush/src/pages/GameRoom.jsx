@@ -7,13 +7,16 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { getSocket } from "../utilities/socket.js";
 import WordSelectionModal from "../components/WordSelectionModal.jsx";
+import Leaderboard from "../components/Leaderboard.jsx";
 
 function GameRoom() {
   const location = useLocation();
   const [players, setPlayers] = useState([]);
   const { username, roomID, type } = location.state || {};
   const socket = getSocket();
-
+  const [turnEndWord, setTurnEndWord] = useState("");
+  const [canStart, setCanStart] = useState(false);
+  const isHost = players[0]?.id === socket.id;
   const [round, setRound] = useState(1);
   const [totalRounds, setTotalRounds] = useState(3);
   const [wordChoices, setWordChoices] = useState([]);
@@ -35,7 +38,7 @@ function GameRoom() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
-  
+
   useEffect(() => {
     if (!roomID) return;
     console.log(username, roomID, type);
@@ -72,8 +75,16 @@ function GameRoom() {
 
     socket.on("turn-ended", ({ word }) => {
       setGamePhase("turn-ended");
+      setTurnEndWord(word);
       setTimeLeft(80);
     });
+
+    socket.on("game-over", ({ players }) => {
+      setPlayers(players);
+      setGamePhase("game-over");
+    });
+
+    socket.on("can-start", () => setCanStart(true));
 
     socket.emit("join-room", { roomID, type, username });
 
@@ -86,6 +97,8 @@ function GameRoom() {
       socket.off("turn-ended");
       socket.off("timer-tick");
       socket.off("hint-update");
+      socket.off("game-over");
+      socket.off("can-start");
     };
   }, [roomID, type, username]);
 
@@ -101,20 +114,24 @@ function GameRoom() {
             round={round}
             totalRounds={totalRounds}
           />
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[75vh]">
-            <div className="lg:col-span-3 h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[75vh] overflow-hidden">
+            <div className="lg:col-span-3 h-full min-h-0">
               <PlayerList
                 username={username}
                 players={players}
                 numberOfPlayers={players.length}
+                isHost={isHost}
+                canStart={canStart}
+                type={type}
+                onStart={() => socket.emit("start-game", { roomID })}
               />
             </div>
 
-            <div className="lg:col-span-6 h-full">
-              <Canvas roomID={roomID} isDrawer={isDrawer}/>
+            <div className="lg:col-span-6 h-full min-h-0">
+              <Canvas roomID={roomID} isDrawer={isDrawer} />
             </div>
 
-            <div className="lg:col-span-3 h-full">
+            <div className="lg:col-span-3 h-full min-h-0">
               <ChatPanel
                 roomID={roomID}
                 username={username}
@@ -135,6 +152,25 @@ function GameRoom() {
             setGamePhase("drawing");
           }}
         />
+      )}
+
+      {gamePhase === "game-over" && (
+        <Leaderboard username={username} players={players} />
+      )}
+
+      {gamePhase === "turn-ended" && !isDrawer && (
+        <div
+          className="overflow-none fixed top-0 left-0 w-screen h-screen bg-black/50 
+    flex justify-center items-center z-50"
+        >
+          <div className="bg-white rounded-2xl shadow-lg p-10 flex flex-col items-center gap-4">
+            <p className="text-gray-500 text-lg">The word was</p>
+            <h2 className="text-4xl font-bold text-indigo-600">
+              {turnEndWord}
+            </h2>
+            <p className="text-gray-400 text-sm">Next round starting soon...</p>
+          </div>
+        </div>
       )}
     </>
   );

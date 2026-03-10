@@ -4,7 +4,7 @@ import { getSocket } from "../utilities/socket.js";
 function ChatPanel({ roomID, username, isDrawer }) {
   const [messages, setMessages] = useState([]);
   const inputRef = useRef(null);
-  const bottomRef = useRef(null); 
+  const bottomRef = useRef(null);
   const socket = getSocket();
 
   useEffect(() => {
@@ -23,6 +23,9 @@ function ChatPanel({ roomID, username, isDrawer }) {
     socket.on("chat-message", handleMessage);
     socket.on("player-guessed", handlePlayerGuessed);
     socket.on("correct-guess", handleCorrectGuess);
+    socket.on("clear-chat", () => {
+      setMessages([]);
+    });
 
     return () => {
       socket.off("chat-message", handleMessage);
@@ -46,7 +49,7 @@ function ChatPanel({ roomID, username, isDrawer }) {
     <div className="bg-white rounded-xl shadow-md p-4 h-full flex flex-col">
       <h2 className="text-lg font-semibold mb-3">Chat</h2>
 
-      <div className="flex-1 overflow-y-auto text-sm space-y-1 text-gray-600">
+      <div className="flex-1 min-h-0 overflow-y-scroll text-sm space-y-1 text-gray-600">
         {messages.map((msg, i) => (
           <div key={i}>
             {msg.type === "chat" && (
@@ -74,7 +77,7 @@ function ChatPanel({ roomID, username, isDrawer }) {
         <input
           ref={inputRef}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          disabled={isDrawer} 
+          disabled={isDrawer}
           type="text"
           placeholder={isDrawer ? "You are drawing..." : "Type guess..."}
           className="flex-1 border rounded-lg px-3 py-2 text-sm 

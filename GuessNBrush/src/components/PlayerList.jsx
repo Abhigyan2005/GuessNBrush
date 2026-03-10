@@ -1,4 +1,12 @@
-function PlayerList({ username, players, numberOfPlayers }) {
+function PlayerList({
+  username,
+  players,
+  numberOfPlayers,
+  isHost,
+  canStart,
+  type,
+  onStart,
+}) {
   console.log(username);
   return (
     <div className="bg-white rounded-xl shadow-md p-4 h-full flex flex-col">
@@ -21,6 +29,16 @@ function PlayerList({ username, players, numberOfPlayers }) {
             </div>
           ))}
         </div>
+
+        {type === "private" && isHost && canStart && (
+          <button
+            onClick={onStart}
+            className="mt-3 w-full bg-green-500 hover:bg-green-600 text-white 
+          py-2 rounded-xl font-medium transition-all hover:scale-105"
+          >
+            Start Game
+          </button>
+        )}
       </div>
     </div>
   );

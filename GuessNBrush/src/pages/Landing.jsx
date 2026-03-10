@@ -3,7 +3,7 @@ import { Sparkles } from "lucide-react";
 import wave from "../assets/svgs/wave.svg";
 import { useNavigate } from "react-router-dom";
 import CreateRoomModal from "../components/CreateRoomModal.jsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { generateUsername } from "../utilities/RandomUserNameGenerator.js";
 import { useRef } from "react";
 import PlayModal from "../components/PlayModal.jsx";
@@ -13,9 +13,20 @@ function Landing() {
   const [IsOpen, SetIsOpen] = useState(false);
   const [IsPlayOpen, SetPlayIsOpen] = useState(false);
   const socket = getSocket();
+  const [onlineCount, setOnlineCount] = useState(0);
 
   const navigate = useNavigate();
   const usernameRef = useRef(null);
+
+  useEffect(() => {
+    socket.on("online-count", ({ count }) => {
+      setOnlineCount(count);
+    })
+
+    return () => {
+      socket.off("online-count");
+    }
+  },[])
 
   const JoinRandomRoom = (roomID, roomType) => {
     const inputName = usernameRef.current.value;
@@ -46,7 +57,7 @@ function Landing() {
               Draw. Guess. Play.
               <Sparkles />
               <span className="text-xs text-green-800 bg-green-100/50 px-2 py-1 rounded-full animate-pulse">
-                12 Online
+                {onlineCount?onlineCount:0}
               </span>
             </p>
 
@@ -108,7 +119,7 @@ function Landing() {
                   const username =
                     usernameRef.current.value || generateUsername();
                   socket.emit("create-private-room", { username });
-                  SetIsOpen(true)
+                  SetIsOpen(true);
                 }}
               >
                 Create a Room

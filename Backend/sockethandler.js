@@ -20,6 +20,15 @@ import {
 } from "./gameManager.js";
 
 export function setupSockets(io) {
+  function reassignHost(roomID) {
+    const room = rooms.get(roomID);
+    if (!room || room.players.length === 0) return;
+
+    room.host = room.players[0].id;
+
+    io.to(roomID).emit("host-changed", { newHostID: room.host });
+  }
+
   function handleStartTurn(roomID) {
     const result = StartTurn(roomID);
     if (!result) return;
@@ -30,23 +39,25 @@ export function setupSockets(io) {
 
     io.to(roomID).emit("waiting-for-word", {
       drawerName: drawer.username,
-      drawerID: drawer.id, 
+      drawerID: drawer.id,
     });
   }
 
   function handleTurnEnd(roomID) {
     stopTimer(roomID);
     const room = rooms.get(roomID);
+    if (!room) return;
     const turnResult = endTurn(roomID);
+    if (!turnResult) return;
 
     io.to(roomID).emit("turn-ended", { word: turnResult.word });
 
     setTimeout(() => {
+      io.to(roomID).emit("draw-clear");
+      io.to(roomID).emit("clear-chat");
       if (turnResult.status === "game-over") {
-        const winner = [...room.players].sort((a, b) => b.score - a.score)[0];
         io.to(roomID).emit("game-over", {
           players: room.players,
-          winner: winner.username,
         });
       } else {
         handleStartTurn(roomID);
@@ -55,6 +66,7 @@ export function setupSockets(io) {
   }
 
   io.on("connection", (socket) => {
+    io.emit("online-count", { count: io.engine.clientsCount });
     socket.on("join-room", ({ roomID, type, username }) => {
       socket.join(roomID);
 
@@ -80,12 +92,25 @@ export function setupSockets(io) {
         score: 0,
       });
       io.to(roomID).emit("room-players", room.players);
-
+      socket.emit("host-changed", { newHostID: room.host });
       if (room.type === "public" && room.players.length >= 2) {
         room.gameStarted = true;
         io.to(roomID).emit("game-started");
         handleStartTurn(roomID);
       }
+
+      if (room.type === "private" && room.players.length >= 2) {
+        room.gameStarted = true;
+        io.to(room.host).emit("can-start");
+      }
+    });
+
+    socket.on("start-game", ({ roomID }) => {
+      const room = rooms.get(roomID);
+      if (!room) return;
+      room.gameStarted = true;
+      io.to(roomID).emit("game-started");
+      handleStartTurn(roomID);
     });
 
     socket.on("find-public-room", ({ username }) => {
@@ -104,32 +129,39 @@ export function setupSockets(io) {
 
       if (room.type === "public" && room.players.length >= 2) {
         room.gameStarted = true;
-        io.to(room).emit("game-started");
+        io.to(roomID).emit("game-started");
         handleStartTurn(roomID);
       }
+      if (room.type === "private" && room.players.length >= 2) {
+        room.gameStarted = true;
+        io.to(room.host).emit("can-start");
+      }
     });
-
 
     //private rooom
     socket.on("create-private-room", ({ username }) => {
       const roomID = CreatePrivateRoom(socket.id);
 
-      if(!roomID){
+      if (!roomID) {
         return null;
       }
 
       const room = addPlayerToRoom(roomID, {
         id: socket.id,
         username,
-        score:0
-      })
+        score: 0,
+      });
 
       socket.emit("joined-private-room", { roomID });
-    })
+    });
 
     socket.on("leave-room", ({ roomID }) => {
+      const wasHost = rooms.get(roomID)?.host === socket.id;
       const room = removePlayer(roomID, socket.id);
-      if (room) io.to(roomID).emit("room-players", room.players);
+      if (room) {
+        io.to(roomID).emit("room-players", room.players);
+        if (wasHost && room.players.length > 0) reassignHost(roomID);
+      }
       socket.leave(roomID);
     });
 
@@ -161,6 +193,19 @@ export function setupSockets(io) {
       const result = checkGuess(roomID, socket.id, message);
 
       if (result.correct) {
+        const room = rooms.get(roomID);
+        const guesser = room.players.find((p) => p.id === socket.id);
+        if (guesser) {
+          guesser.score += Math.round((room.timeLeft / 80) * 500) + 100;
+        }
+
+        const drawer = room.players[room.currentDrawerIndex];
+        if (drawer) {
+          drawer.score += Math.round((room.timeLeft / 80) * 50) + 20;
+        }
+
+        io.to(roomID).emit("room-players", room.players);
+
         io.to(roomID).emit("player-guessed", { username });
         socket.emit("correct-guess");
 
@@ -172,11 +217,30 @@ export function setupSockets(io) {
       }
     });
 
+    //drawing-sharing
+    socket.on("draw-start", (data) =>
+      socket.to(data.roomID).emit("draw-start", data),
+    );
+    socket.on("draw-move", (data) =>
+      socket.to(data.roomID).emit("draw-move", data),
+    );
+    socket.on("draw-fill", (data) =>
+      socket.to(data.roomID).emit("draw-fill", data),
+    );
+    socket.on("draw-clear", (data) =>
+      socket.to(data.roomID).emit("draw-clear", data),
+    );
+
     socket.on("disconnect", () => {
       for (const roomID of rooms.keys()) {
+        const wasHost = rooms.get(roomID)?.host === socket.id;
         const room = removePlayer(roomID, socket.id);
-        if (room) io.to(roomID).emit("room-players", room.players);
+        if (room) {
+          io.to(roomID).emit("room-players", room.players);
+          if (wasHost && room.players.length > 0) reassignHost(roomID);
+        }
       }
+      io.emit("online-count", { count: io.engine.clientsCount });
     });
   });
 }
