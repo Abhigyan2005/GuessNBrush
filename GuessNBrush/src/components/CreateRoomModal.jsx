@@ -61,14 +61,14 @@ function CreateRoomModal({ SetIsOpen, onConfirm }) {
             onClick={() => {
               onConfirm(RoomID);
             }}
-            className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl shadow-md transition-transform hover:scale-105"
+            className="flex-1 bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white cursor-pointer py-3 rounded-xl shadow-md transition-transform hover:scale-105"
           >
             Join
           </button>
 
           <button
             onClick={() => SetIsOpen(false)}
-            className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl shadow-md transition-transform hover:scale-105"
+            className="flex-1 bg-amber-800 cursor-pointer text-white py-3 rounded-xl shadow-md transition-transform hover:scale-105"
           >
             Close
           </button>

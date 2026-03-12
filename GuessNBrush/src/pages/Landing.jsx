@@ -46,7 +46,7 @@ function Landing() {
         <div className="max-w-6xl w-full text-center mb-12 mt-20">
           <h1 className="text-4xl md:text-5xl font-bold mb-12">
             <span>Guess</span>
-            <span className="text-indigo-700 text-6xl">N</span>
+            <span className="text-amber-800 text-6xl">N</span>
             <span>Brush</span>
           </h1>
         </div>

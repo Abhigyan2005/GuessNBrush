@@ -41,8 +41,8 @@ function PlayModal({
         flex flex-col items-center gap-8`}
       >
         <button
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl 
-          shadow-md transition-transform hover:scale-105"
+          className="w-full bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-xl 
+          shadow-md transition-transform hover:scale-105 cursor-pointer"
           onClick={() => {
             const username = usernameRef.current.value;
             const finalUsername = username || generateUsername();
@@ -71,7 +71,8 @@ function PlayModal({
           />
 
           <button
-            className="w-full bg-green-500 hover:bg-green-600 text-white py-3 
+            className="w-full bg-amber-50 hover:bg-amber-600 text-amber-800 py-3 
+            hover:text-white cursor-pointer
             rounded-xl shadow-md transition-transform hover:scale-105"
             onClick={() => {
               JoinRandomRoom(RoomRef.current.value, "private");
@@ -84,8 +85,8 @@ function PlayModal({
         <div className="flex gap-4 mt-4">
           <button
             onClick={() => SetPlayIsOpen(false)}
-            className="bg-red-500 text-white px-6 py-2 rounded-xl 
-            shadow-lg transition-transform hover:scale-105"
+            className="bg-amber-800 text-white px-6 py-2 rounded-xl 
+            shadow-lg transition-transform hover:scale-105 cursor-pointer"
           >
             Close
           </button>
