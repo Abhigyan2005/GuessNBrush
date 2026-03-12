@@ -8,7 +8,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://guess-n-brush.vercel.app/",
+    origin: "https://guess-n-brush.vercel.app",
     methods: ["GET", "POST"],
   },
 });
