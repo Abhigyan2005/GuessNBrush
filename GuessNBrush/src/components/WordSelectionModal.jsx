@@ -9,13 +9,16 @@ function WordSelectionModal({
 
   useEffect(() => {
     if (!isDrawer) return;
-
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
+
+          if (wordChoices.length === 0) return 0; // guard
+
           const random =
             wordChoices[Math.floor(Math.random() * wordChoices.length)];
+
           onWordSelect(random);
           return 0;
         }

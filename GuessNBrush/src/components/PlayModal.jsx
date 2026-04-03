@@ -2,11 +2,7 @@ import { useRef } from "react";
 import { useState, useEffect } from "react";
 import { generateUsername } from "../utilities/RandomUserNameGenerator";
 import { getSocket } from "../utilities/socket";
-function PlayModal({
-  SetPlayIsOpen,
-  JoinRandomRoom,
-  usernameRef,
-}) {
+function PlayModal({ SetPlayIsOpen, JoinRandomRoom, usernameRef }) {
   const [isVisible, setIsVisible] = useState(false);
   const socket = getSocket();
   const RoomRef = useRef(null);
@@ -19,12 +15,22 @@ function PlayModal({
   }, []);
 
   useEffect(() => {
+    socket.on("room-check", ({ exists, roomID }) => {
+      if (exists) {
+        JoinRandomRoom(roomID, "private");
+      } else {
+        alert("Room not found. Check the code and try again.");
+      }
+    });
+
     socket.on("joined-public-room", ({ roomID }) => {
       JoinRandomRoom(roomID, "public");
     });
 
     return () => {
-      socket.off("joined-public-room"); 
+      socket.off("room-check");
+
+      socket.off("joined-public-room");
     };
   }, [socket]);
 
@@ -75,7 +81,12 @@ function PlayModal({
             hover:text-white cursor-pointer
             rounded-xl shadow-md transition-transform hover:scale-105"
             onClick={() => {
-              JoinRandomRoom(RoomRef.current.value, "private");
+              const code = RoomRef.current.value.trim();
+              if (code.length !== 6) {
+                alert("Please enter a valid 4-digit room code");
+                return;
+              }
+              socket.emit("check-room", { roomID: code });
             }}
           >
             Join

@@ -46,14 +46,17 @@ function GameRoom() {
     });
 
     socket.on("waiting-for-word", ({ drawerName, drawerID }) => {
-      setDrawerName(drawerName);
-      setDrawerID(drawerID);
-      setGamePhase("word-selection");
+      setGamePhase((prev) => {
+        if (prev === "game-over") return prev;
+        setDrawerName(drawerName);
+        setDrawerID(drawerID);
+        return "word-selection";
+      });
     });
 
     socket.on("choose-word", ({ words }) => {
       setWordChoices(words);
-      setGamePhase("word-selection");
+      setGamePhase((prev) => (prev === "game-over" ? prev : "word-selection"));
     });
 
     socket.on("turn-started", ({ drawerID, hint, round, totalRounds }) => {
@@ -126,7 +129,7 @@ function GameRoom() {
                 canStart={canStart}
                 type={type}
                 onStart={() => {
-                  socket.emit("start-game", { roomID })
+                  socket.emit("start-game", { roomID });
                   setCanStart(false);
                 }}
               />
@@ -171,9 +174,7 @@ function GameRoom() {
         >
           <div className="bg-white rounded-2xl shadow-lg p-10 flex flex-col items-center gap-4">
             <p className="text-gray-500 text-lg">The word was</p>
-            <h2 className="text-4xl font-bold text-amber-600">
-              {turnEndWord}
-            </h2>
+            <h2 className="text-4xl font-bold text-amber-600">{turnEndWord}</h2>
             <p className="text-gray-400 text-sm">Next round starting soon...</p>
           </div>
         </div>
