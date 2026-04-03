@@ -207,7 +207,6 @@ export function setupSockets(io) {
         io.to(roomID).emit("room-players", room.players);
 
         io.to(roomID).emit("player-guessed", { username });
-        socket.emit("correct-guess");
 
         if (result.allGuessed) {
           handleTurnEnd(roomID);

@@ -7,7 +7,6 @@ function PlayerList({
   type,
   onStart,
 }) {
-  console.log(username);
   return (
     <div className="bg-white rounded-xl shadow-md p-4 h-full flex flex-col">
       <h2 className="text-lg font-semibold mb-3">
@@ -20,8 +19,8 @@ function PlayerList({
             <div
               key={a.id}
               className={
-                username === a.username
-                  ? "text-blue-600 font-semibold"
+                username?.trim() === a.username?.trim()
+                  ? "text-amber-800 font-semibold"
                   : "text-gray-800"
               }
             >

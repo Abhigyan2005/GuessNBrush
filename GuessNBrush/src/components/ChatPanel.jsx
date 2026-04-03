@@ -16,21 +16,20 @@ function ChatPanel({ roomID, username, isDrawer }) {
       setMessages((prev) => [...prev, { type: "guessed", username }]);
     };
 
-    const handleCorrectGuess = () => {
-      setMessages((prev) => [...prev, { type: "correct" }]);
-    };
+    // const handleCorrectGuess = () => {
+    //   setMessages((prev) => [...prev, { type: "correct" }]);
+    // };
+
+    const handleClearChat = () => setMessages([]);
 
     socket.on("chat-message", handleMessage);
     socket.on("player-guessed", handlePlayerGuessed);
-    socket.on("correct-guess", handleCorrectGuess);
-    socket.on("clear-chat", () => {
-      setMessages([]);
-    });
+    socket.on("clear-chat", handleClearChat);
 
     return () => {
       socket.off("chat-message", handleMessage);
       socket.off("player-guessed", handlePlayerGuessed);
-      socket.off("correct-guess", handleCorrectGuess);
+      socket.off("clear-chat", handleClearChat);
     };
   }, []);
 
@@ -58,16 +57,15 @@ function ChatPanel({ roomID, username, isDrawer }) {
                 {msg.message}
               </span>
             )}
+
             {msg.type === "guessed" && (
               <span className="text-green-600 font-semibold">
-                ✅ {msg.username} guessed it!
+                {msg.username === username
+                  ? "You guessed it!"
+                  : `${msg.username} guessed it!`}
               </span>
             )}
-            {msg.type === "correct" && (
-              <span className="text-green-600 font-semibold">
-                ✅ You guessed it!
-              </span>
-            )}
+
           </div>
         ))}
         <div ref={bottomRef} />

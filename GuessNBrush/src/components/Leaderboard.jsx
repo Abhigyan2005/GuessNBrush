@@ -8,7 +8,7 @@ function Leaderboard({ players, username }) {
       
       <div className="bg-white rounded-2xl shadow-lg p-10 flex flex-col items-center gap-6 min-w-[400px]">
         <h2 className="text-3xl font-bold"> Game Over</h2>
-        <p className="text-indigo-600 font-semibold text-lg">
+        <p className="text-amber-600 font-semibold text-lg">
           Winner: {winner?.username}
         </p>
 
@@ -17,7 +17,7 @@ function Leaderboard({ players, username }) {
             <div
               key={player.id}
               className={`flex justify-between items-center px-4 py-3 rounded-xl
-                ${username === player.username ? "bg-indigo-100 text-indigo-700 font-semibold" : "bg-gray-100 text-gray-800"}`}
+                ${username === player.username ? "bg-indigo-100 text-amber-700 font-semibold" : "bg-gray-100 text-gray-800"}`}
             >
               <span>#{index + 1} {player.username}</span>
               <span className="font-bold">{player.score} pts</span>

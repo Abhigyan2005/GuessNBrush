@@ -25,7 +25,7 @@ function GameRoom() {
   const [drawerName, setDrawerName] = useState("");
   const [hint, setHint] = useState("");
   const [timeLeft, setTimeLeft] = useState(80);
-
+  const [currentWord, setCurrentWord] = useState("");
   const isDrawer = drawerID === socket.id;
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -41,7 +41,6 @@ function GameRoom() {
 
   useEffect(() => {
     if (!roomID) return;
-    console.log(username, roomID, type);
     socket.on("room-players", (roomPlayers) => {
       setPlayers(roomPlayers);
     });
@@ -113,6 +112,9 @@ function GameRoom() {
             timeLeft={timeLeft}
             round={round}
             totalRounds={totalRounds}
+            username={username}
+            isDrawer={isDrawer}
+            currentWord={currentWord}
           />
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[75vh] overflow-hidden">
             <div className="lg:col-span-3 h-full min-h-0">
@@ -151,6 +153,7 @@ function GameRoom() {
           isDrawer={isDrawer}
           drawerName={drawerName}
           onWordSelect={(word) => {
+            setCurrentWord(word);
             socket.emit("word-chosen", { roomID, word });
             setGamePhase("drawing");
           }}
@@ -168,7 +171,7 @@ function GameRoom() {
         >
           <div className="bg-white rounded-2xl shadow-lg p-10 flex flex-col items-center gap-4">
             <p className="text-gray-500 text-lg">The word was</p>
-            <h2 className="text-4xl font-bold text-indigo-600">
+            <h2 className="text-4xl font-bold text-amber-600">
               {turnEndWord}
             </h2>
             <p className="text-gray-400 text-sm">Next round starting soon...</p>

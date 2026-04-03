@@ -5,7 +5,7 @@ import { hexToRgba, floodFill } from "../utilities/CanvasTool.js";
 function Canvas({ roomID, isDrawer }) {
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
-  const colorRef = useRef(null);
+  const [colour, setColor] = useState("#000000");
   const [mode, setMode] = useState("draw");
   const [brushSize, setBrushSize] = useState(2);
   const socket = getSocket();
@@ -20,10 +20,9 @@ function Canvas({ roomID, isDrawer }) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-
-    const onDrawStart = ({ x, y, color, brushSize, mode }) => {
+    const onDrawStart = ({ x, y, colour, brushSize, mode }) => {
       const ctx = ctxRef.current;
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = colour;
       ctx.lineWidth = Number(brushSize);
       ctx.lineCap = "round";
       ctx.globalCompositeOperation =
@@ -40,13 +39,13 @@ function Canvas({ roomID, isDrawer }) {
       ctx.stroke();
     };
 
-    const onDrawFill = ({ x, y, color }) => {
-      floodFill(ctxRef.current, canvas, x, y, hexToRgba(color));
+    const onDrawFill = ({ x, y, colour }) => {
+      floodFill(ctxRef.current, canvas, x, y, hexToRgba(colour));
     };
 
     const onDrawClear = () => {
       const ctx = ctxRef.current;
-      ctx.clearRect(0, 0, canvas.width, canvas.height); 
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
 
     socket.on("draw-start", onDrawStart);
@@ -61,7 +60,7 @@ function Canvas({ roomID, isDrawer }) {
       socket.off("draw-clear", onDrawClear);
     };
   }, []);
-  
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -73,14 +72,13 @@ function Canvas({ roomID, isDrawer }) {
       }
       if (e.button !== 0) return;
       if (mode === "fill") {
-        const color = colorRef.current.value;
-        floodFill(ctx, canvas, e.offsetX, e.offsetY, hexToRgba(color));
-        socket.emit("draw-fill", { roomID, x: e.offsetX, y: e.offsetY, color });
+        console.log(colour)
+        floodFill(ctx, canvas, e.offsetX, e.offsetY, hexToRgba(colour));
+        socket.emit("draw-fill", { roomID, x: e.offsetX, y: e.offsetY, colour });
         return;
       }
       mousedown = true;
-      const color = colorRef.current.value;
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = colour;
       ctx.lineWidth = Number(brushSize);
       ctx.lineCap = "round";
       ctx.globalCompositeOperation =
@@ -93,7 +91,7 @@ function Canvas({ roomID, isDrawer }) {
         roomID,
         x: e.offsetX,
         y: e.offsetY,
-        color,
+        colour,
         brushSize,
         mode,
       });
@@ -125,7 +123,7 @@ function Canvas({ roomID, isDrawer }) {
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [mode, brushSize, roomID, isDrawer]);
+  }, [mode, brushSize, roomID, isDrawer, colour]);
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 h-full flex flex-col">
@@ -140,21 +138,30 @@ function Canvas({ roomID, isDrawer }) {
         <div className="mt-3 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => setMode("draw")}
-            className="px-3 py-1.5 bg-black text-white rounded-lg text-sm"
+            className={`px-3 py-1.5 ${mode === "draw" ? "bg-amber-200" : "bg-gray-200"} shadow-md text-white rounded-lg text-sm`}
           >
-            Brush
+            ✏️
           </button>
+          <select
+            value={brushSize}
+            onChange={(e) => setBrushSize(e.target.value)}
+            className="px-2 py-1.5 border rounded-lg text-sm"
+          >
+            <option value="2">Small</option>
+            <option value="6">Medium</option>
+            <option value="12">Large</option>
+          </select>
           <button
             onClick={() => setMode("erase")}
-            className="px-3 py-1.5 bg-gray-200 rounded-lg text-sm"
+            className={`px-3 py-1.5 ${mode === "erase" ? "bg-amber-200" : "bg-gray-200"} shadow-md text-white rounded-lg text-sm`}
           >
-            Eraser
+            🧽
           </button>
           <button
             onClick={() => setMode("fill")}
-            className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm"
+            className={`px-3 py-1.5 ${mode === "fill" ? "bg-amber-200" : "bg-gray-200"} shadow-md text-white rounded-lg text-sm`}
           >
-            Fill
+            🪣
           </button>
           <button
             onClick={() => {
@@ -166,20 +173,11 @@ function Canvas({ roomID, isDrawer }) {
           >
             Clear
           </button>
-          <select
-            value={brushSize}
-            onChange={(e) => setBrushSize(e.target.value)}
-            className="px-2 py-1.5 border rounded-lg text-sm"
-          >
-            <option value="2">Small</option>
-            <option value="6">Medium</option>
-            <option value="12">Large</option>
-          </select>
           <input
-            ref={colorRef}
             type="color"
             defaultValue="#000000"
             className="w-8 h-8 cursor-pointer"
+            onChange={(e) => setColor(e.target.value)}
           />
         </div>
       ) : (
