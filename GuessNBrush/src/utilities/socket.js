@@ -4,10 +4,7 @@ let socket = null;
 
 export const getSocket = () => {
   if (!socket) {
-    socket = io("https://guessnbrush.onrender.com");
-    socket.on("connect", () => {
-      console.log("Socket Connected: ", socket.id);
-    });
+    socket = io(import.meta.env.VITE_BACKEND_URL);
   }
   return socket;
 };

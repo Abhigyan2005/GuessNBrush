@@ -2,13 +2,16 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import { setupSockets } from "./sockethandler.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 const app = express();
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://guess-n-brush.vercel.app",
+    origin: process.env.FRONTEND_URL,
     methods: ["GET", "POST"],
   },
 });
