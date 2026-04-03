@@ -21,7 +21,8 @@ export function floodFill(ctx, canvas, startX, startY, fillColor) {
   if (
     startColor[0] === fillColor[0] &&
     startColor[1] === fillColor[1] &&
-    startColor[2] === fillColor[2]
+    startColor[2] === fillColor[2] &&
+    startColor[3] === fillColor[3] 
   )
     return;
   while (stack.length) {
