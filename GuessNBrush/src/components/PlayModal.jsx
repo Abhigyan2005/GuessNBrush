@@ -24,7 +24,7 @@ function PlayModal({ SetPlayIsOpen, JoinRandomRoom, usernameRef }) {
     });
 
     socket.on("joined-public-room", ({ roomID }) => {
-      JoinRandomRoom(roomID, "public");
+      JoinRandomRoom(roomID, "public", window._pendingUsername);
     });
 
     return () => {
@@ -83,7 +83,7 @@ function PlayModal({ SetPlayIsOpen, JoinRandomRoom, usernameRef }) {
             onClick={() => {
               const code = RoomRef.current.value.trim();
               if (code.length !== 6) {
-                alert("Please enter a valid 4-digit room code");
+                alert("Please enter a valid 6-digit room code");
                 return;
               }
               socket.emit("check-room", { roomID: code });

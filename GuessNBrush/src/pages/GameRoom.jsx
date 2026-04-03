@@ -41,7 +41,14 @@ function GameRoom() {
 
   useEffect(() => {
     if (!roomID) return;
+    console.log(
+      "joining with username:",
+      username,
+      "from state:",
+      location.state,
+    );
     socket.on("room-players", (roomPlayers) => {
+      console.log("players received:", roomPlayers);
       setPlayers(roomPlayers);
     });
 

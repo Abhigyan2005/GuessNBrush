@@ -21,17 +21,16 @@ function Landing() {
   useEffect(() => {
     socket.on("online-count", ({ count }) => {
       setOnlineCount(count);
-    })
+    });
 
     return () => {
       socket.off("online-count");
-    }
-  },[])
+    };
+  }, []);
 
   const JoinRandomRoom = (roomID, roomType) => {
-    const inputName = usernameRef.current.value;
-    const finalUsername = inputName || generateUsername();
-
+    const finalUsername = usernameRef.current.value || generateUsername();
+    console.log("JoinRandomRoom called with:", finalUsername);
     navigate("/GameRoom", {
       state: {
         username: finalUsername,
@@ -57,7 +56,7 @@ function Landing() {
               Draw. Guess. Play.
               <Sparkles />
               <span className="text-xs text-green-800 bg-green-100/50 px-2 py-1 rounded-full animate-pulse">
-                {onlineCount?onlineCount:0}
+                {onlineCount ? onlineCount : 0}
               </span>
             </p>
 
