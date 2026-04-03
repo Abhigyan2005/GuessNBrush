@@ -32,8 +32,8 @@ export function setupSockets(io) {
   function handleStartTurn(roomID) {
     const room = rooms.get(roomID);
     if (!room) return;
-    if (room.turnInProgress) return; // ✅ prevent double call
-    room.turnInProgress = true; // ✅ lock
+    if (room.turnInProgress) return;
+    room.turnInProgress = true;
 
     const result = StartTurn(roomID);
     if (!result) return;
@@ -80,6 +80,7 @@ export function setupSockets(io) {
   io.on("connection", (socket) => {
     io.emit("online-count", { count: io.engine.clientsCount });
     socket.on("join-room", ({ roomID, type, username }) => {
+      console.log("join-room received username:", username);
       socket.join(roomID);
 
       if (!rooms.has(roomID)) {
@@ -127,27 +128,8 @@ export function setupSockets(io) {
 
     socket.on("find-public-room", ({ username }) => {
       let roomID = FindAvailablePublicRoom();
-      if (!roomID) {
-        roomID = CreatePublicRoom(socket.id);
-      }
-
-      const room = addPlayerToRoom(roomID, {
-        id: socket.id,
-        username,
-        score: 0,
-      });
-
+      if (!roomID) roomID = CreatePublicRoom(socket.id);
       socket.emit("joined-public-room", { roomID });
-
-      if (room.type === "public" && room.players.length >= 2) {
-        room.gameStarted = true;
-        io.to(roomID).emit("game-started");
-        handleStartTurn(roomID);
-      }
-      if (room.type === "private" && room.players.length >= 2) {
-        room.gameStarted = true;
-        io.to(room.host).emit("can-start");
-      }
     });
 
     //private rooom
@@ -161,17 +143,7 @@ export function setupSockets(io) {
     });
     socket.on("create-private-room", ({ username }) => {
       const roomID = CreatePrivateRoom(socket.id);
-
-      if (!roomID) {
-        return null;
-      }
-
-      const room = addPlayerToRoom(roomID, {
-        id: socket.id,
-        username,
-        score: 0,
-      });
-
+      if (!roomID) return;
       socket.emit("joined-private-room", { roomID });
     });
 
