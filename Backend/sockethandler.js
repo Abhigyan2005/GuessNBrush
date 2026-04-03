@@ -30,11 +30,15 @@ export function setupSockets(io) {
   }
 
   function handleStartTurn(roomID) {
+    const room = rooms.get(roomID);
+    if (!room) return;
+    if (room.turnInProgress) return; // ✅ prevent double call
+    room.turnInProgress = true; // ✅ lock
+
     const result = StartTurn(roomID);
     if (!result) return;
-
+    if (!result.drawer) return;
     const { drawer, wordChoices } = result;
-
     io.to(drawer.id).emit("choose-word", { words: wordChoices }); //only to drawer
 
     io.to(roomID).emit("waiting-for-word", {
@@ -47,18 +51,26 @@ export function setupSockets(io) {
     stopTimer(roomID);
     const room = rooms.get(roomID);
     if (!room) return;
+
+    room.turnInProgress = false;
+
     const turnResult = endTurn(roomID);
     if (!turnResult) return;
 
     io.to(roomID).emit("turn-ended", { word: turnResult.word });
 
     setTimeout(() => {
+      const currentRoom = rooms.get(roomID);
+      if (!currentRoom) return;
+
       io.to(roomID).emit("draw-clear");
       io.to(roomID).emit("clear-chat");
+
       if (turnResult.status === "game-over") {
-        io.to(roomID).emit("game-over", {
-          players: room.players,
-        });
+        const index = publicRooms.indexOf(roomID);
+        if (index !== -1) publicRooms.splice(index, 1);
+        currentRoom.gameStarted = false;
+        io.to(roomID).emit("game-over", { players: currentRoom.players });
       } else {
         handleStartTurn(roomID);
       }
@@ -139,6 +151,14 @@ export function setupSockets(io) {
     });
 
     //private rooom
+    socket.on("check-room", ({ roomID }) => {
+      const room = rooms.get(roomID);
+      if (room && !room.gameStarted) {
+        socket.emit("room-check", { exists: true, roomID });
+      } else {
+        socket.emit("room-check", { exists: false });
+      }
+    });
     socket.on("create-private-room", ({ username }) => {
       const roomID = CreatePrivateRoom(socket.id);
 

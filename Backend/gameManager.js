@@ -4,8 +4,8 @@ import { rooms } from "./roomManager.js";
 export function StartTurn(roomID) {
   const room = rooms.get(roomID);
   if (!room) return null;
-
   const drawer = room.players[room.currentDrawerIndex];
+  if (!drawer) return null;
   const wordChoices = getRandomWords(room.usedWords, 3);
 
   return { drawer, wordChoices };
@@ -71,7 +71,7 @@ export function endTurn(roomID) {
 export function startTimer(roomID, io, onEnd) {
   const room = rooms.get(roomID);
   if (!room) return;
-
+  if (room.timer) return;
   room.timeLeft = 80;
 
   room.timer = setInterval(() => {
