@@ -10,7 +10,8 @@ A real-time multiplayer drawing and guessing game. Players take turns drawing a 
 
 - **Frontend** — React, Vite, Tailwind CSS
 - **Backend** — Node.js, Express, Socket.io
-- **Deployment** — Vercel (frontend), Render (backend)
+- **DevOps & Containers** — Docker, Docker Compose
+- **Deployment** — Vercel (frontend), Render (backend managed via Docker)
 
 ---
 
@@ -29,71 +30,72 @@ A real-time multiplayer drawing and guessing game. Players take turns drawing a 
 
 ## Run Locally
 
-**Clone the repo**
+### 🐳 Option 1: Using Docker
+You can spin up the entire full-stack ecosystem (Frontend, Backend, and Networking) with a single command using Docker.
+
+**1. Clone the repo**
 ```bash
-git clone https://github.com/Abhigyan2005/GuessNBrush
+git clone [https://github.com/Abhigyan2005/GuessNBrush](https://github.com/Abhigyan2005/GuessNBrush)
 cd GuessNBrush
 ```
+**2. Boot the environment**
+
+```bash
+docker compose up --build
+```
+
+
+### 🛠️ Option 2: Manual Way
 
 **Backend**
+
 ```bash
 cd Backend
 npm install
-```
-
-```bash
 npm run start
 ```
 
 **Frontend**
-```bash
-cd Frontend
-npm install
-```
 
 ```bash
+cd GuessNBrush
+npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` in two tabs and join the same room to test.
+Open http://localhost:5173 in two tabs and join the same room to test.
 
----
-
-## Project Structure
+### Project Structure
 
 ```
 guessnbrush/
 ├── Backend/
-│   ├── index.js             # Express + Socket.io setup
-│   ├── socketHandler.js     # All socket event handlers
-│   ├── roomManager.js       # Room and player state
-│   ├── gameManager.js       # Turn logic, timer, scoring
+│   ├── index.js             
+│   ├── socketHandler.js     
+│   ├── roomManager.js       
+│   ├── gameManager.js       
+│   ├── Dockerfile          
 │   └── utilities/
-│       ├── words.js         # 2000+ word bank
+│       ├── words.js         
 │       └── generateRoomId.js
 │
-└── Frontend/
-    └── src/
-        ├── pages/
-        │   ├── Landing.jsx
-        │   └── GameRoom.jsx
-        ├── components/
-        │   ├── Canvas.jsx
-        │   ├── ChatPanel.jsx
-        │   ├── PlayerList.jsx
-        │   ├── Board.jsx
-        │   ├── WordSelectionModal.jsx
-        │   ├── Leaderboard.jsx
-        │   └── ...
-        └── utilities/
-            ├── socket.js    # Singleton socket instance
-            └── CanvasTool.js
+├── GuessNBrush/             
+│   ├── src/
+│   │   ├── pages/
+│   │   │   ├── Landing.jsx
+│   │   │   └── GameRoom.jsx
+│   │   ├── components/
+│   │   │   ├── Canvas.jsx
+│   │   │   ├── ChatPanel.jsx
+│   │   │   └── ...
+│   │   └── utilities/
+│   │       ├── socket.js   
+│   │       └── CanvasTool.js
+│   └── Dockerfile           
+│
+└── docker-compose.yml      
 ```
-
----
 
 ## Screenshots
 
 ![alt text](image.png)
----
-
