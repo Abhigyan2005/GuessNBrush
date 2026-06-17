@@ -1,0 +1,31 @@
+services:
+  backend:
+    build: 
+      context: "./Backend"
+      dockerfile: DockerFile
+    ports:
+      - '3000:3000'
+    environment:
+      - PORT=3000
+      - FRONTEND_URL=http://localhost:5173
+    
+    networks:
+      - guessnbrush-network
+  frontend:
+    build: 
+      context: "./GuessNBrush"
+      dockerfile: DockerFile
+    ports:
+      - '5173:5173'
+    environment:
+      - VITE_BACKEND_URL=http://localhost:3000
+    networks:
+      - guessnbrush-network
+    depends_on: #by using depends on it makes sure that first backend container is up and running first then frontend turns on.
+      - backend 
+
+networks:
+  guessnbrush-network:
+    driver: bridge
+
+    

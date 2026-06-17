@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 const server = http.createServer(app);
 
@@ -23,6 +24,6 @@ app.get("/", (req, res) => {
 
 setupSockets(io);
 
-server.listen(3000, () => {
+server.listen(PORT, () => {
   console.log("server is running");
 });
